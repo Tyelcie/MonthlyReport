@@ -1,0 +1,81 @@
+---
+title: "Montly Report"
+auther: "Jie Shen"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    highlight: pygments
+    css: vscode.css
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    number_section: true
+    fig_caption: true
+bibliography: ref.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, eval = TRUE, cache = TRUE, fig.align = 'center', message = FALSE, error = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = 'D://SynologyDrive/MyDrive/MonthlyReport')
+```
+
+```{r general prep}
+library(readxl)
+library(DBI)
+library(odbc)
+library(ggplot2)
+# con <- dbConnect(odbc::odbc(), "PostgreSQL35W", timeout = 10)
+a <- readRDS('MonthlyReport.rds')
+contracts <- a$contracts
+pdetail <- a$pdetail
+start <- '20200101'
+end <- '20200131'
+```
+
+# 本月进展
+
+```{r accounts overview}
+contracts <- read_xlsx('data/inventory.xlsx', sheet = '合作医院信息登记')
+accounts_hospital <- subset(contracts, select = c(`SA编号(根据HE填报或查阅目标医院表)`,`协议类型`, `开通护士账号 @沈捷 @佩佩`, `开通护士账号日期@沈捷 @佩佩`))
+accounts_hospital <- accounts_hospital[accounts_hospital$`协议类型` == '合作护士服务协议',]
+accounts_hospital <- accounts_hospital[accounts_hospital$`开通护士账号 @沈捷 @佩佩` == '是',]
+
+```
+
+
+```{r progress overview}
+pdetail_new <- read_excel(paste0('data/', start, '-', end, '项目进展.xlsx'), sheet = 'D-患者详情数据')
+pdetail <- rbind(pdetail, pdetail_new)
+rm(pdetail_new)
+
+```
+
+## 项目进展
+
++ 账号开通：截至本月完成盖章X家，开通账号的医院X家，待更新资料X家
++ 项目进展：累计入组患者`r nrow(pdetail)`例，本月入组患者X例（比上月新增X例，其中2.0医院X例，平均X例/院；1.0医院X例，平均X例/院）
++ 首日教育进展：
++ 健康行动计划填写比例X%；FPG目标设定比例X%；
++ 智能设备绑定绑定比例X%，本月血糖上传平均X次/周，胰岛素剂量X次/周
++ 本月患者满意度调研，满意比例X%，非常满意X%
+
+## 微信运营
+
+## 关爱中心
+  
+## 二级标题
+
+正文blabla，此处当有引用[@grolemund_r_nodate]。
+
+# Thanks
+
+```{r}
+saveRDS(list(contracts = contracts, pdetail = pdetail), 'MOnthlyReport.rds')
+```
+
+
+# 参考文献{#References}
+
+貌似这个标题只能用英文。如果有参考文献，请删除这段说明文字，只留下一个标题。开头yaml段落的`bibliography`指向引文bib文件。如果没有引文，则须删除`bibliography`字段。
+
+If any biblography is specified, please delet this note, and only reserve the Reference header, which should remain exactly the current character. If no biblography is specified, please delet the `biblography` in the yaml.
