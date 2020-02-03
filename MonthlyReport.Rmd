@@ -30,6 +30,8 @@ contracts <- a$contracts
 pdetail <- a$pdetail
 start <- '20200101'
 end <- '20200131'
+lstart <- '20191201'
+lend <- '20191231'
 ```
 
 # 本月进展
@@ -46,14 +48,17 @@ accounts_hospital <- accounts_hospital[accounts_hospital$`开通护士账号 @�
 ```{r progress overview}
 pdetail_new <- read_excel(paste0('data/', start, '-', end, '项目进展.xlsx'), sheet = 'D-患者详情数据')
 pdetail <- rbind(pdetail, pdetail_new)
-rm(pdetail_new)
+pdetail$enroll_time <- as.POSIXlt(pdetail$`入组日期`)
+pdetail$enroll_date <- as.Date(pdetail$enroll_time)
+pdetail_last <- pdetail[pdetail$enroll_date <= as.Date(lend, '%Y%m%d'),]
+pdetail_last <- pdetail_last[pdetail_last$enroll_date >= as.Date(lstart, '%Y%m%d'),]
 
 ```
 
 ## 项目进展
 
 + 账号开通：截至本月完成盖章X家，开通账号的医院X家，待更新资料X家
-+ 项目进展：累计入组患者`r nrow(pdetail)`例，本月入组患者X例（比上月新增X例，其中2.0医院X例，平均X例/院；1.0医院X例，平均X例/院）
++ 项目进展：累计入组患者`r nrow(pdetail)`例，本月入组患者`r nrow(pdetail_new)`例（比上月新增`r nrow(pdetail) - nrow(pdetail_last)`例，其中2.0医院X例，平均X例/院；1.0医院X例，平均X例/院）
 + 首日教育进展：
 + 健康行动计划填写比例X%；FPG目标设定比例X%；
 + 智能设备绑定绑定比例X%，本月血糖上传平均X次/周，胰岛素剂量X次/周
