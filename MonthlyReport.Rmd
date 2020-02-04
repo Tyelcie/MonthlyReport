@@ -28,6 +28,7 @@ library(ggplot2)
 a <- readRDS('MonthlyReport.rds')
 contracts <- a$contracts
 pdetail <- a$pdetail
+rm(a)
 start <- '20200101'
 end <- '20200131'
 lstart <- '20191201'
@@ -63,6 +64,12 @@ pdetail_last <- pdetail_last[pdetail_last$enroll_date >= as.Date(lstart, '%Y%m%d
 + 健康行动计划填写比例X%；FPG目标设定比例X%；
 + 智能设备绑定绑定比例X%，本月血糖上传平均X次/周，胰岛素剂量X次/周
 + 本月患者满意度调研，满意比例X%，非常满意X%
+
+```{r}
+accounts_pi <- contracts[contracts$`开通后管账号 @沈捷 @佩佩` == '是',]
+accounts_pi <- accounts_pi[accounts_pi$`协议类型` == '合作医疗机构合作确认书',]
+
+```
 
 ## 微信运营
 
