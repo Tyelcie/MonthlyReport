@@ -24,7 +24,7 @@ library(readxl)
 library(DBI)
 library(odbc)
 library(ggplot2)
-# con <- dbConnect(odbc::odbc(), "PostgreSQL35W", timeout = 10)
+con <- dbConnect(odbc::odbc(), "PostgreSQL35W", timeout = 10)
 a <- readRDS('MonthlyReport.rds')
 contracts <- a$contracts
 pdetail <- a$pdetail
@@ -73,6 +73,53 @@ accounts_pi <- accounts_pi[accounts_pi$`协议类型` == '合作医疗机构合�
 
 ## 微信运营
 
+```{r}
+patient_enroll <- read_excel(paste0('data/',start, '-', end, '项目进展.xlsx'), sheet = 'S-入组患者数据')
+percentage <- grep('比例', colnames(patient_enroll))
+patient_enroll[,percentage] <- patient_enroll[,percentage]/100
+write.csv(patient_enroll, 'penroll.csv',row.names = F, na = '')
+```
+
+
+### 患者地域分布
+```{r}
+penroll <- dbGetQuery(con, 'select * from trio.patient_enroll')
+Encoding(penroll$province) <- 'UTF8'
+province_enroll <- sapply(unique(penroll$province), function(x) sum(penroll$total_enroll[penroll$province == x]))
+province_enroll <- province_enroll[order(province_enroll, decreasing = T)]
+head(data.frame(province_enroll), 5)
+```
+
+### 患者年龄分布
+
+```{r}
+pdetail <- dbGetQuery(con, 'select * from trio.patient_detail')
+summary(pdetail$age)
+age_group <- cut(pdetail$age, c(0, 18, 26, 36, 46, 60, 100), right = F, 
+                 labels = c('18岁以下', '18岁到25岁', '26岁到35岁', '36岁到45岁', '46岁到60岁', '60岁以上'))
+levels(age_group)
+data.frame(table(age_group))
+
+```
+
+### 微信公众号文章
+
+```{r}
+posts <- read_excel(paste0('data/posts_', start,'-',  end, '.xlsx'), col_names = T, skip = 4)
+funnel <- subset(posts, select = c(`日期`, `图文位置`, `阅读量`, `打开率`))
+colnames(funnel) <- c('date', 'position', 'reads', 'open_rate')
+funnel$date <- as.Date(funnel$date)
+ggplot(funnel, aes(x = date))+
+  geom_line(aes(y = reads, color = position), size = 1)+
+  labs(x = '推送日期', y = '打开率', color = '位置')+
+  scale_x_date(breaks = unique(posts$date))+
+  theme()
+library(recharts)
+echartr(funnel, position, reads, type='funnel', facet = date) %>%
+    setTitle('Titanic: N by Cabin Class')
+```
+
+
 ## 关爱中心
   
 ## 二级标题
@@ -90,4 +137,4 @@ saveRDS(list(contracts = contracts, pdetail = pdetail), 'MOnthlyReport.rds')
 
 貌似这个标题只能用英文。如果有参考文献，请删除这段说明文字，只留下一个标题。开头yaml段落的`bibliography`指向引文bib文件。如果没有引文，则须删除`bibliography`字段。
 
-If any biblography is specified, please delet this note, and only reserve the Reference header, which should remain exactly the current character. If no biblography is specified, please delet the `biblography` in the yaml.
+If any biblography is specified, please delet this note, and only reserve the Reference header, which should remain exactly the current character. If please delet the `biblography` in the yaml.
